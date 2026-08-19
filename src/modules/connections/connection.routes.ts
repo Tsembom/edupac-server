@@ -24,7 +24,10 @@ router.patch(
   ConnectionController.respondToRequest
 );
 
+router.delete("/:connectionId", ConnectionController.removeConnection);
+
 router.get("/my", ConnectionController.getMyConnections);
 router.get("/pending", ConnectionController.getPendingRequests);
+router.get("/sent", ConnectionController.getSentRequests);
 
 export const connectionRoutes = router;

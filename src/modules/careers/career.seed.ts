@@ -69,7 +69,7 @@ const runSeed = async () => {
     console.log("🧹 Clearing existing CareerRole documents...");
     await CareerRole.deleteMany({});
 
-    console.log("🚀 Inserting initial Pathfinder career roles...");
+    console.log("🚀 Inserting initial Edupac career roles...");
     await CareerRole.insertMany(SEED_CAREERS);
 
     console.log(`✅ Seed complete: ${SEED_CAREERS.length} career pathways created successfully!`);

@@ -6,7 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.string().default("5000").transform((val) => parseInt(val, 10)),
-  MONGO_URI: z.string().min(1, "MONGO_URI is required").default("mongodb://localhost:27017/pathfinder"),
+  MONGO_URI: z.string().min(1, "MONGO_URI is required").default("mongodb://localhost:27017/edupac"),
   JWT_ACCESS_SECRET: z.string().min(10, "JWT_ACCESS_SECRET must be at least 10 chars"),
   JWT_ACCESS_EXPIRES_IN: z.string().default("1d"),
   JWT_REFRESH_SECRET: z.string().min(10, "JWT_REFRESH_SECRET must be at least 10 chars"),

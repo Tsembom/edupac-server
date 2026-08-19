@@ -34,22 +34,34 @@ export class ConnectionService {
         throw new AppError("You are already connected with this user", 400);
       }
       if (existing.status === "pending") {
-        throw new AppError("A pending connection request already exists", 400);
+        throw new AppError("A pending connection request already exists between you", 400);
       }
       // If rejected, allow re-requesting by updating status to pending
       existing.requesterId = new mongoose.Types.ObjectId(requesterId);
       existing.receiverId = targetUser._id;
       existing.status = "pending";
       existing.note = note;
-      return existing.save();
+      await existing.save();
+
+      const populated = await Connection.findById(existing._id)
+        .populate("requesterId", "name username role avatarUrl profileHeadline schoolName")
+        .populate("receiverId", "name username role avatarUrl profileHeadline schoolName");
+
+      return populated || existing;
     }
 
-    return Connection.create({
+    const created = await Connection.create({
       requesterId,
       receiverId: targetUser._id,
       status: "pending",
       note,
     });
+
+    const populated = await Connection.findById(created._id)
+      .populate("requesterId", "name username role avatarUrl profileHeadline schoolName")
+      .populate("receiverId", "name username role avatarUrl profileHeadline schoolName");
+
+    return populated || created;
   }
 
   static async respondToRequest(
@@ -87,7 +99,11 @@ export class ConnectionService {
       ]);
     }
 
-    return connection;
+    const populated = await Connection.findById(connection._id)
+      .populate("requesterId", "name username role avatarUrl profileHeadline schoolName")
+      .populate("receiverId", "name username role avatarUrl profileHeadline schoolName");
+
+    return populated || connection;
   }
 
   static async getMyConnections(userId: string): Promise<IConnection[]> {
@@ -95,17 +111,55 @@ export class ConnectionService {
       $or: [{ requesterId: userId }, { receiverId: userId }],
       status: "accepted",
     })
-      .populate("requesterId", "name username role avatarUrl profileHeadline")
-      .populate("receiverId", "name username role avatarUrl profileHeadline")
+      .populate("requesterId", "name username role avatarUrl profileHeadline schoolName")
+      .populate("receiverId", "name username role avatarUrl profileHeadline schoolName")
       .sort({ updatedAt: -1 });
   }
 
   static async getPendingRequests(userId: string): Promise<IConnection[]> {
+    // Incoming pending requests (others requesting to connect with you)
     return Connection.find({
       receiverId: userId,
       status: "pending",
     })
-      .populate("requesterId", "name username role avatarUrl profileHeadline")
+      .populate("requesterId", "name username role avatarUrl profileHeadline schoolName")
       .sort({ createdAt: -1 });
+  }
+
+  static async getSentRequests(userId: string): Promise<IConnection[]> {
+    // Outgoing pending requests (requests you sent to others)
+    return Connection.find({
+      requesterId: userId,
+      status: "pending",
+    })
+      .populate("receiverId", "name username role avatarUrl profileHeadline schoolName")
+      .sort({ createdAt: -1 });
+  }
+
+  static async cancelOrRemove(connectionId: string, userId: string): Promise<void> {
+    const connection = await Connection.findById(connectionId);
+    if (!connection) {
+      throw new AppError("Connection not found", 404);
+    }
+
+    const isParticipant =
+      connection.requesterId.toString() === userId ||
+      connection.receiverId.toString() === userId;
+
+    if (!isParticipant) {
+      throw new AppError("Not authorized to remove this connection", 403);
+    }
+
+    await Connection.findByIdAndDelete(connectionId);
+
+    // Remove from both connectedUsers sets
+    await Promise.all([
+      User.findByIdAndUpdate(connection.requesterId, {
+        $pull: { connectedUsers: connection.receiverId },
+      }),
+      User.findByIdAndUpdate(connection.receiverId, {
+        $pull: { connectedUsers: connection.requesterId },
+      }),
+    ]);
   }
 }

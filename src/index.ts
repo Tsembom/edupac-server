@@ -12,7 +12,7 @@ const startServer = async () => {
 
     // 3. Start listening on configured port
     const server = app.listen(env.PORT, () => {
-      console.log(`🚀 Pathfinder Server running on http://localhost:${env.PORT} in ${env.NODE_ENV} mode`);
+      console.log(`🚀 Edupac Server running on http://localhost:${env.PORT} in ${env.NODE_ENV} mode`);
       console.log(`📡 Healthcheck available at: http://localhost:${env.PORT}/api/v1/health`);
     });
 
@@ -36,7 +36,7 @@ const startServer = async () => {
     process.on("SIGINT", () => handleShutdown("SIGINT"));
     process.on("SIGTERM", () => handleShutdown("SIGTERM"));
   } catch (error) {
-    console.error("❌ Failed to start Pathfinder Server:", error);
+    console.error("❌ Failed to start Edupac Server:", error);
     process.exit(1);
   }
 };

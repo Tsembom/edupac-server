@@ -89,4 +89,44 @@ export class ConnectionController {
       next(error);
     }
   }
+
+  static async getSentRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        throw new AppError("Unauthorized", 401);
+      }
+
+      const sent = await ConnectionService.getSentRequests(
+        req.user._id.toString()
+      );
+
+      ApiResponse.success({
+        res,
+        data: sent,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async removeConnection(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        throw new AppError("Unauthorized", 401);
+      }
+
+      const connectionId = req.params.connectionId as string;
+      await ConnectionService.cancelOrRemove(
+        connectionId,
+        req.user._id.toString()
+      );
+
+      ApiResponse.success({
+        res,
+        message: "Connection removed successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

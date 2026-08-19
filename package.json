@@ -1,7 +1,7 @@
 {
-  "name": "pathfinder-server",
+  "name": "edupac-server",
   "version": "1.0.0",
-  "description": "Pathfinder Backend API - Scalable, Modular, and Secure Node.js & TypeScript Architecture",
+  "description": "Edupac Backend API - Scalable, Modular, and Secure Node.js & TypeScript Architecture",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

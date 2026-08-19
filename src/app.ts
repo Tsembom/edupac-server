@@ -50,7 +50,7 @@ export const createApp = () => {
   app.get("/", (_req: Request, res: Response) => {
     ApiResponse.success({
       res,
-      message: "Pathfinder Backend API is operational",
+      message: "Edupac Backend API is operational",
       data: {
         environment: env.NODE_ENV,
         version: "1.0.0",

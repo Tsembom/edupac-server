@@ -1,6 +1,6 @@
-# Pathfinder Backend Server
+# Edupac Backend Server
 
-A scalable, modular, and enterprise-grade backend for the **Pathfinder** career guidance application built with **Node.js, Express, TypeScript, and MongoDB (Mongoose)**.
+A scalable, modular, and enterprise-grade backend for the **Edupac** career guidance application built with **Node.js, Express, TypeScript, and MongoDB (Mongoose)**.
 
 ---
 
@@ -16,7 +16,7 @@ server/
 │   ├── modules/            # Feature-driven business modules
 │   │   ├── auth/           # Registration, Login, Token Refresh
 │   │   ├── users/          # Profile retrieval, username search, user updates
-│   │   ├── connections/    # Explorer <-> Guide linking & invitations
+│   │   ├── connections/    # Student <-> Parent <-> School linking & invitations
 │   │   └── careers/        # Career pathways, skills matrix & match scoring
 │   ├── utils/              # ApiResponse standardizer, AppError, JWT, Bcrypt password tools
 │   ├── app.ts              # Express application configuration
@@ -46,7 +46,7 @@ Default settings:
 ```env
 PORT=5000
 NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/pathfinder
+MONGO_URI=mongodb://localhost:27017/edupac
 JWT_ACCESS_SECRET=your_super_secret_access_key_32chars
 JWT_ACCESS_EXPIRES_IN=1d
 JWT_REFRESH_SECRET=your_super_secret_refresh_key_32chars
@@ -82,7 +82,7 @@ npm start
 ### 🔐 Authentication (`/api/v1/auth`)
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/api/v1/auth/register` | Register new account (Explorer or Guide) | No |
+| `POST` | `/api/v1/auth/register` | Register new account (Student, Parent, or School) | No |
 | `POST` | `/api/v1/auth/login` | Login with username/email & password | No |
 | `POST` | `/api/v1/auth/refresh` | Refresh expired access token | No |
 
@@ -112,6 +112,7 @@ npm start
 ---
 
 ## 🛡 Security Best Practices Implemented
+- **Cameroon Phone Validation**: Strict validation for Cameroonian mobile and fixed lines.
 - **Zod Schema Validation**: Strict input validation on all routes before reaching controllers.
 - **Bcrypt Password Hashing**: Salted passwords with high factor (12 rounds).
 - **JWT Token Strategy**: Short-lived access tokens with secure refresh token rotation.

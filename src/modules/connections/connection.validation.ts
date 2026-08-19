@@ -4,7 +4,8 @@ export const createConnectionSchema = z.object({
   body: z.object({
     targetUsername: z
       .string({ required_error: "Target username is required" })
-      .min(1, "Target username cannot be empty"),
+      .min(1, "Target username cannot be empty")
+      .transform((val) => val.replace(/^@/, "").toLowerCase().trim()),
     note: z.string().max(200, "Note cannot exceed 200 characters").optional(),
   }),
 });

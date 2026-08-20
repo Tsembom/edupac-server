@@ -18,6 +18,9 @@ export interface IUser extends Document {
   targetCareerId?: mongoose.Types.ObjectId;
   skills: string[];
   isVerified: boolean;
+  verificationStatus: "pending" | "approved" | "rejected";
+  documentName?: string;
+  documentUrl?: string;
   connectedUsers: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -113,6 +116,20 @@ const userSchema = new Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "approved",
+      index: true,
+    },
+    documentName: {
+      type: String,
+      trim: true,
+    },
+    documentUrl: {
+      type: String,
+      trim: true,
     },
     connectedUsers: [
       {

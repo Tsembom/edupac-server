@@ -14,6 +14,8 @@ import { authRoutes } from "./modules/auth/auth.routes.js";
 import { userRoutes } from "./modules/users/user.routes.js";
 import { connectionRoutes } from "./modules/connections/connection.routes.js";
 import { careerRoutes } from "./modules/careers/career.routes.js";
+import guidanceRoutes from "./modules/guidance/guidance.routes.js";
+import adminRoutes from "./modules/admin/admin.routes.js";
 
 export const createApp = () => {
   const app = express();
@@ -75,6 +77,8 @@ export const createApp = () => {
   app.use("/api/v1/users", userRoutes);
   app.use("/api/v1/connections", connectionRoutes);
   app.use("/api/v1/careers", careerRoutes);
+  app.use("/api/v1/guidance", guidanceRoutes);
+  app.use("/api/v1/admin", adminRoutes);
 
   // 8. Handle Undefined Routes (404)
   app.all("*", (req: Request, _res: Response, next: NextFunction) => {

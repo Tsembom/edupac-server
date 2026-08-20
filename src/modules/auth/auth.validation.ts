@@ -48,6 +48,8 @@ export const registerSchema = z.object({
       institutionType: z.string().max(50).optional(),
       designation: z.string().max(100).optional(),
       city: z.string().max(100).optional(),
+      documentName: z.string().max(200).optional(),
+      documentUrl: z.string().max(500).optional(),
       linkUsername: z.string().optional(),
     })
     .superRefine((data, ctx) => {

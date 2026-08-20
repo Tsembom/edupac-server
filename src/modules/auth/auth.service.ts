@@ -1,7 +1,7 @@
 import { User, IUser } from "../users/user.model.js";
 import { Connection } from "../connections/connection.model.js";
 import { hashPassword, comparePassword } from "../../utils/password.js";
-import { signAccessToken, signRefreshToken, verifyRefreshToken, UserRole } from "../../utils/jwt.js";
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import { AppError } from "../../utils/appError.js";
 
 export interface RegisterInput {
@@ -10,11 +10,13 @@ export interface RegisterInput {
   email: string;
   phoneNumber?: string;
   password: string;
-  role: "student" | "parent" | "school";
+  role: "student" | "parent" | "school" | "admin";
   schoolName?: string;
   institutionType?: string;
   designation?: string;
   city?: string;
+  documentName?: string;
+  documentUrl?: string;
   linkUsername?: string;
 }
 
@@ -43,6 +45,8 @@ export class AuthService {
 
     const hashedPassword = await hashPassword(input.password);
 
+    const isSchool = input.role === "school";
+
     const user = await User.create({
       name: input.name,
       username: input.username.toLowerCase(),
@@ -54,6 +58,10 @@ export class AuthService {
       institutionType: input.institutionType,
       designation: input.designation,
       city: input.city,
+      documentName: input.documentName,
+      documentUrl: input.documentUrl,
+      isVerified: !isSchool,
+      verificationStatus: isSchool ? "pending" : "approved",
     });
 
     // Handle optional initial account linking
@@ -74,57 +82,71 @@ export class AuthService {
 
     const payload = {
       userId: user._id.toString(),
-      role: user.role as UserRole,
+      role: user.role,
       username: user.username,
     };
 
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
 
-    return { accessToken, refreshToken, user };
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
   }
 
   static async login(input: LoginInput): Promise<AuthTokens> {
-    const query = input.emailOrUsername.toLowerCase();
+    const identifier = input.emailOrUsername.toLowerCase().trim();
+
+    // Query by email OR username, explicitly selecting password
     const user = await User.findOne({
-      $or: [{ email: query }, { username: query }],
+      $or: [{ email: identifier }, { username: identifier }],
     }).select("+password");
 
     if (!user) {
-      throw new AppError("Invalid credentials. Please check your username/email and password.", 401);
+      throw new AppError("Invalid email/username or password", 401);
     }
 
-    const isPasswordValid = await comparePassword(input.password, user.password);
-    if (!isPasswordValid) {
-      throw new AppError("Invalid credentials. Please check your username/email and password.", 401);
+    const isMatch = await comparePassword(input.password, user.password);
+    if (!isMatch) {
+      throw new AppError("Invalid email/username or password", 401);
     }
 
     const payload = {
       userId: user._id.toString(),
-      role: user.role as UserRole,
+      role: user.role,
       username: user.username,
     };
 
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
 
-    return { accessToken, refreshToken, user };
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
   }
 
-  static async refresh(refreshToken: string): Promise<{ accessToken: string }> {
-    const payload = verifyRefreshToken(refreshToken);
+  static async refresh(token: string): Promise<{ accessToken: string }> {
+    const payload = verifyRefreshToken(token);
 
     const user = await User.findById(payload.userId);
     if (!user) {
-      throw new AppError("User belonging to this token no longer exists.", 401);
+      throw new AppError("User belonging to this token no longer exists", 401);
     }
 
     const newAccessToken = signAccessToken({
       userId: user._id.toString(),
-      role: user.role as UserRole,
+      role: user.role,
       username: user.username,
     });
 
     return { accessToken: newAccessToken };
+  }
+
+  static async refreshAccessToken(token: string): Promise<{ accessToken: string }> {
+    return this.refresh(token);
   }
 }

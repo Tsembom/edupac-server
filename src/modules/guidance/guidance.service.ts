@@ -16,6 +16,7 @@ export class GuidanceService {
       careers: any[];
       courses: any[];
       universities: any[];
+      reportCard?: any;
       extractedContext?: any;
     }
   ): Promise<IGuidanceRoadmap> {
@@ -30,6 +31,7 @@ export class GuidanceService {
         careers: payload.careers || [],
         courses: payload.courses || [],
         universities: payload.universities || [],
+        reportCard: payload.reportCard,
         extractedContext: payload.extractedContext,
       },
       { new: true, upsert: true }
